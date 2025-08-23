@@ -18,7 +18,7 @@ log_level = LOG_LEVELS.get(log_level_name, logging.DEBUG)
 
 
 # Create a logger
-logger = logging.getLogger("reconciliation")
+logger = logging.getLogger()
 logger.setLevel(log_level)
 # Disable propagation to prevent duplicate logs
 logger.propagate = False

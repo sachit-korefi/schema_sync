@@ -122,7 +122,7 @@ async def update_schema(schema_uuid: str, schema_json: Dict[str, str], session: 
         # Re-raise HTTP exceptions (like 404) so they're not caught by generic handler
         raise
     except Exception as e:
-        logger.error(f"Reconciliation failed: {str(e)}", exc_info=True)
+        logger.error(f"Failed to update schema: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error", "details": str(e)}
@@ -150,7 +150,7 @@ async def delete_schema(schema_uuid: str, session: Session = Depends(get_db)):
         # Re-raise HTTP exceptions (like 404) so they're not caught by generic handler
         raise
     except Exception as e:
-        logger.error(f"Reconciliation failed: {str(e)}", exc_info=True)
+        logger.error(f"Failed to delete schema : {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error", "details": str(e)}
