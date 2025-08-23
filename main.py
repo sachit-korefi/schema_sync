@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from config.database import get_db
@@ -11,10 +12,18 @@ from router.output_schema_router import schema_router
 from router.user_router import user_router
 from router.sync_router import sync_router
 
+
 load_dotenv()
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],      # Allow all domains
+    allow_credentials=False,  # No cookies or authentication
+    allow_methods=["*"],      # Allow all HTTP methods
+    allow_headers=["*"],      # Allow all headers
+)
 app.include_router(schema_router)
 app.include_router(user_router)
 app.include_router(sync_router)
