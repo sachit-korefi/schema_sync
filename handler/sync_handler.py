@@ -1,6 +1,6 @@
 from DAO.output_schema_dao import OutputSchemaDAO
-from handler.sync_handler import SyncHandlerExcel
-from handler.sync_handler import SyncHandlerCSV
+from handler.sync_handler_excel import SyncHandlerExcel
+from handler.sync_handler_csv import SyncHandlerCSV
 from config.logger import log_errors
 
 class SyncHandler:

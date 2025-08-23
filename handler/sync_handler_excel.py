@@ -1,7 +1,4 @@
-
-
 from DAO.output_schema_dao import OutputSchemaDAO
-from handler.sync_handler import SyncHandlerExcel
 from config.logger import log_errors
 
 class SyncHandlerExcel:
