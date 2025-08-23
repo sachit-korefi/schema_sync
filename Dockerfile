@@ -24,4 +24,4 @@ COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY . .
 
-CMD ["sh", "-c", "df -h && uvicorn main:app --host 0.0.0.0 --port 80"]
+CMD ["sh", "-c", "df -h && alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 80"]
