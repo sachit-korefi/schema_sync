@@ -17,7 +17,7 @@ class SyncHandlerExcel:
     async def _get_column_mapping(self, sheeet_df, output_schema):
 
         prompt = f"""
-            You are a data mapping expert. I have a Excel sheet with these columns:
+            You are a data mapping expert. I have a Excel sheet with following first 10 rows of the excel sheet:
             {sheeet_df}
 
             I need to map them to this output schema:
@@ -32,7 +32,7 @@ class SyncHandlerExcel:
             }}
 
             Info:
-            skip_n_rows: count of rows containing no data or empty rows before header
+            skip_n_rows: count of rows containing no data or empty rows before header(treat NaN values as empty values)
             reordered_columns: List of column indexes to map in the desired order of columns
 
             Rules:
