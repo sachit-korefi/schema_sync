@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from config.logger import logger
 from sqlalchemy.orm import Session
 from config.database import get_db
-from DAO.output_schema_dao import OutputSchemaDAO
 from DAO.user_dao import UserDAO
 from typing import Dict, Any
 import uuid
@@ -71,7 +70,6 @@ async def update_user_details(user_uuid: str, user_data: Dict[str, Any], session
         user_dao = UserDAO(session)
         
         updated_rows = user_dao.update_user_by_uuid(user_uuid=user_uuid, update_data=user_data)
-        print(updated_rows)
         
         if updated_rows == 0:
             logger.error(f"User with UUID {user_uuid} not found")
@@ -97,7 +95,7 @@ async def update_user_details(user_uuid: str, user_data: Dict[str, Any], session
 async def create_user(user_data: Dict[str, str], session: Session = Depends(get_db)):
     try:
         # Validate required fields
-        required_fields = ['user_email', 'user_firstname', 'user_lastname']
+        required_fields = ['user_email', 'user_firstname', 'user_lastname', 'user_password']
         for field in required_fields:
             if field not in user_data:
                 raise HTTPException(

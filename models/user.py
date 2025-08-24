@@ -9,6 +9,7 @@ class User(Base):
 
     user_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_email = Column(String, unique=True, nullable=False)
+    user_password = Column(String, nullable=False)
     user_firstname = Column(String, nullable=False)
     user_lastname = Column(String, nullable=False)
 
