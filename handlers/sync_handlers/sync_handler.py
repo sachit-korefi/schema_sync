@@ -18,16 +18,27 @@ class SyncHandler:
         for file in files:
             filename = file.filename
             logger.info(f"processing file : {filename}")
+
             file_metadata = sync_metadata["file_metadatas"].get(filename, None)
+            logger.info(f"file_metadata : {file_metadata}")
             if file_metadata is None:
+                logger.error(f"schema not found for file {filename}")
                 continue
+
             output_schema = output_schemas_dict.get(file_metadata.get("schema_uuid"), None)
+            logger.info(f"file_schema : {output_schema}")
+            if output_schema is None:
+                logger.error(f"schema not found for file {filename}")
+                continue
+
             file_extension = filename.split('.')[-1]
             processed_file = None
             if file_extension == 'csv' and output_schema is not None:
                 processed_file = await self.sync_handler_csv.handle(output_schema, file)
             elif file_extension in ['xlsx', 'xls'] and output_schema is not None:
-                processed_file = await self.sync_handler_excel.handle(output_schema, file)
+                sheet_name = file_metadata.get("sheet", None)
+                if sheet_name is not None:
+                    processed_file = await self.sync_handler_excel.handle(output_schema, file, sheet_name)
             if processed_file is not None:
                 processed_files.append(processed_file)
         return processed_files

@@ -90,6 +90,7 @@ class SyncHandlerCSV:
         reordered_columns = mapping_result.get("reordered_columns", None)
         
         mapped_df = df.iloc[:, reordered_columns]
+        mapped_df.columns = updated_columns
         return mapped_df
 
     @log_errors
