@@ -109,4 +109,3 @@ class SyncHandlerCSV:
             "file": processed_file
         }
         return file_detail
-    
