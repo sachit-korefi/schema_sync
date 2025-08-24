@@ -29,6 +29,7 @@ async def get_schema(schema_uuid: str, session: Session = Depends(get_db)):
                 "message": f"Schema fetched sucessfully",
                 "schema_uuid": schema_uuid,
                 "user_uuid": output_schema["user_uuid"],
+                "output_schema": output_schema["schema"]
             }
         )
     except HTTPException:

@@ -15,13 +15,6 @@ async def get_all_users(session: Session = Depends(get_db)):
         user_dao = UserDAO(session)
         users = user_dao.get_all_users()
         
-        if not users:
-            logger.warning("No users found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No users found"
-            )
-        
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
