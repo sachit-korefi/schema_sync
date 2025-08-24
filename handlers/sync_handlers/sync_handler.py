@@ -1,7 +1,7 @@
 from DAO.output_schema_dao import OutputSchemaDAO
-from handler.sync_handler_excel import SyncHandlerExcel
-from handler.sync_handler_csv import SyncHandlerCSV
-from config.logger import log_errors
+from handlers.sync_handlers.sync_handler_excel import SyncHandlerExcel
+from handlers.sync_handlers.sync_handler_csv import SyncHandlerCSV
+from config.logger import log_errors, logger
 
 class SyncHandler:
     def __init__(self, session):
@@ -11,34 +11,25 @@ class SyncHandler:
         self.sync_handler_excel = SyncHandlerExcel()
 
     @log_errors
-    def handle(self, sync_metadata, files):
+    async def handle(self, sync_metadata, files):
         processed_files = []
         output_schemas_dict = self.get_output_schemas(sync_metadata=sync_metadata)
 
         for file in files:
             filename = file.filename
+            logger.info(f"processing file : {filename}")
             file_metadata = sync_metadata["file_metadatas"].get(filename, None)
             if file_metadata is None:
-                processed_files.append({
-                    "file_name": filename,
-                    "file": None,
-                    "error": True,
-                    "error_message": "Schema not found"
-                })
                 continue
+            output_schema = output_schemas_dict.get(file_metadata.get("schema_uuid"), None)
             file_extension = filename.split('.')[-1]
             processed_file = None
-            if file_extension == 'csv':
-                processed_file = self.sync_handler_csv.handle(file_metadata, file)
-            elif file_extension in ['xlsx', 'xls']:
-                processed_file = self.sync_handler_excel.handle(file_metadata, file)
+            if file_extension == 'csv' and output_schema is not None:
+                processed_file = await self.sync_handler_csv.handle(output_schema, file)
+            elif file_extension in ['xlsx', 'xls'] and output_schema is not None:
+                processed_file = await self.sync_handler_excel.handle(output_schema, file)
             if processed_file is not None:
-                processed_files.append({
-                    "file_name": filename,
-                    "file": processed_file,
-                    "error": False,
-                    "error_message": None
-                })
+                processed_files.append(processed_file)
         return processed_files
 
     @log_errors

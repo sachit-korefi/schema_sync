@@ -31,7 +31,7 @@ if not logger.handlers:
 
     # Formatter
     formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+        "%(asctime)s | %(levelname)s | %(message)s"
     )
     handler.setFormatter(formatter)
 
