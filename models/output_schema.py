@@ -8,6 +8,7 @@ class OutputSchema(Base):
     __tablename__ = 'output_schemas'
 
     schema_uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    schema_name = Column(String, nullable=True)
     user_uuid = Column(UUID(as_uuid=True))
     schema = Column(JSON, nullable=False)
 

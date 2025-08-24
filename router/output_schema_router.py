@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from config.database import get_db
 from DAO.output_schema_dao import OutputSchemaDAO
-from typing import Dict
+from typing import Dict, Any
 
 schema_router = APIRouter(prefix="/schema")
 
@@ -27,9 +27,8 @@ async def get_schema(schema_uuid: str, session: Session = Depends(get_db)):
             status_code=status.HTTP_200_OK,
             content={
                 "message": f"Schema fetched sucessfully",
-                "schema_uuid": schema_uuid,
                 "user_uuid": output_schema["user_uuid"],
-                "output_schema": output_schema["schema"]
+                "output_schema": output_schema
             }
         )
     except HTTPException:
@@ -46,9 +45,9 @@ async def get_schema(schema_uuid: str, session: Session = Depends(get_db)):
 async def get_all_schemas(user_uuid: str, session: Session = Depends(get_db)):
     try:
         output_schema_dao = OutputSchemaDAO(session)
-        output_schema = output_schema_dao.get_output_schemas_by_user_uuid(user_uuid=user_uuid)
+        output_schemas = output_schema_dao.get_output_schemas_by_user_uuid(user_uuid=user_uuid)
         
-        if output_schema == []:
+        if output_schemas == []:
             logger.error(f"Schemas with user UUID {user_uuid} not found")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -59,8 +58,8 @@ async def get_all_schemas(user_uuid: str, session: Session = Depends(get_db)):
             status_code=status.HTTP_200_OK,
             content={
                 "message": f"Schemas fetched sucessfully",
-                "user_uuid": output_schema[0]["user_uuid"],
-                "output_schemas": output_schema,
+                "user_uuid": output_schemas[0]["user_uuid"],
+                "output_schemas": output_schemas,
             }
         )
     except HTTPException:
@@ -74,10 +73,10 @@ async def get_all_schemas(user_uuid: str, session: Session = Depends(get_db)):
         )
 
 @schema_router.post("/{user_uuid}", status_code=status.HTTP_202_ACCEPTED)
-async def create_schema(user_uuid: str, schema_json: Dict[str, str], session: Session = Depends(get_db)):
+async def create_schema(user_uuid: str, schema_details: Dict[str, Any], session: Session = Depends(get_db)):
     try:
         output_schema_dao = OutputSchemaDAO(session)
-        output_schema = output_schema_dao.create_output_schema(user_uuid=user_uuid, output_schema_json=schema_json)
+        output_schema = output_schema_dao.create_output_schema(user_uuid=user_uuid, schema_details=schema_details)
 
         if output_schema is None:
             logger.error(f"Schema with UUID '{output_schema.schema_uuid}' not found")
@@ -103,10 +102,10 @@ async def create_schema(user_uuid: str, schema_json: Dict[str, str], session: Se
     
 
 @schema_router.put("/{schema_uuid}", status_code=status.HTTP_202_ACCEPTED)
-async def update_schema(schema_uuid: str, schema_json: Dict[str, str], session: Session = Depends(get_db)):
+async def update_schema(schema_uuid: str, schema_details: Dict[str, Any], session: Session = Depends(get_db)):
     try:
         output_schema_dao = OutputSchemaDAO(session)
-        is_updated = output_schema_dao.update_output_schema_by_schema_uuid(schema_uuid=schema_uuid, schema=schema_json)
+        is_updated = output_schema_dao.update_output_schema_by_schema_uuid(schema_uuid=schema_uuid, schema_details=schema_details)
         if is_updated == 0:
             logger.error(f"Schema with UUID {schema_uuid} not found")
             raise HTTPException(
