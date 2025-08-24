@@ -10,6 +10,7 @@ from DAO.base_dao import BaseDAO
 from config import logger
 from router.output_schema_router import schema_router
 from router.user_router import user_router
+from router.sync_router import sync_router
 
 
 load_dotenv()
@@ -25,6 +26,7 @@ app.add_middleware(
 )
 app.include_router(schema_router)
 app.include_router(user_router)
+app.include_router(sync_router)
 
 @app.get("/")
 async def read_root():
