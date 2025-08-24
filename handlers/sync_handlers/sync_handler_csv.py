@@ -55,7 +55,7 @@ class SyncHandlerCSV:
                         "content": prompt,
                     }
                 ],
-                model="openai/gpt-oss-20b",
+                model=os.environ.get("GROQ_MODEL","openai/gpt-oss-20b"),
                 stream=False,
                 temperature=0.1,  # Low temperature for consistent mapping
             )

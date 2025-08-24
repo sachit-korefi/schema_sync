@@ -1,5 +1,6 @@
 alembic==1.16.1
 fastapi==0.115.12
+groq==0.31.0
 openpyxl==3.1.5
 psycopg2-binary==2.9.10
 python-dotenv==1.0.0
