@@ -17,13 +17,33 @@ class SyncHandlerExcel:
     async def _get_column_mapping(self, sheeet_df, output_schema):
 
         prompt = f"""
-            You are a data mapping expert. I have a Excel sheet with following first 10 rows of the excel sheet:
+            You are a data mapping expert. Your task is to map columns from an Excel sheet to a given output schema.
+
+            ### INPUT DATA:
+            First 5 rows of the Excel sheet:
             {sheeet_df}
 
-            I need to map them to this output schema:
+            Output schema (list of columns in desired order):
             {output_schema}
 
-            Please provide a JSON response with the following structure: 
+            ### REQUIRED OUTPUT (JSON only, no extra text):
+            {{
+                "skip_n_rows": <integer or null>,
+                "reordered_columns": <list of integers or null>,
+                "error": <true|false>,
+                "error_message": <string or null>
+            }}
+
+            ### RULES:
+            1. Determine `skip_n_rows` is the count of rows which are not part of the actual data from top.
+            2. The header row is the first non-empty row after skipping `skip_n_rows`.
+            3. Use ONLY the header row (and at most the next one or two rows if needed) for understanding the column names. Ignore data rows beyond the first 2 non-empty rows to avoid confusion.
+            4. For `reordered_columns`, return the column indexes (0-based) in the order that matches the output schema.
+            5. Match columns using semantic similarity, including common variations and abbreviations (e.g., "first_name" ~ "fname" ~ "First Name").
+            6. Do not guess; only map if you are highly confident. If any column in `output_schema` cannot be matched, return an error response (see below).
+
+            ### EXAMPLES:
+            Success:
             {{
                 "skip_n_rows": 4,
                 "reordered_columns": [3, 0, 1],
@@ -31,26 +51,17 @@ class SyncHandlerExcel:
                 "error_message": null
             }}
 
-            Info:
-            skip_n_rows: count of rows containing no data or empty rows before header(treat NaN values as empty values)
-            reordered_columns: List of column indexes to map in the desired order of columns
-
-            Rules:
-            1. Match columns based on semantic meaning, not just exact names
-            2. Consider common variations (e.g., "first_name" matches "fname", "First Name")
-            3. If no good match exists, include it in unmapped_output_columns
-            4. Only include exact matches or very high confidence matches
-            5. Return valid JSON only, no explanation text
-
-            If not able to match then return with following JSON response with the following structure:
+            Failure:
             {{
                 "skip_n_rows": null,
                 "reordered_columns": null,
                 "error": true,
                 "error_message": "column tax_value not found"
             }}
-        """
 
+            Now provide the JSON output based on the above instructions.
+
+        """
         try:
             chat_completion = self.client.chat.completions.create(
                 messages=[
@@ -112,11 +123,18 @@ class SyncHandlerExcel:
             logger.error(f"Available sheets: {available_sheets}")
             return None
         
-        # Get intelligent column mapping using Groq LLM
         sheet_df = df[sheet_name]
-        first_10_rows = sheet_df.head(10)
-        first_10_rows.columns = ["NaN" if col.startswith("Unnamed") else col for col in first_10_rows.columns]
-        mapping_result = await self._get_column_mapping(first_10_rows, output_schema)
+        rows = []
+        rows.append(f"row 0 : {sheet_df.columns.to_list()}")
+
+        # Get the actual number of rows
+        num_rows = min(5, len(sheet_df))
+
+        for i in range(num_rows):
+            row_as_list = sheet_df.iloc[i].tolist()
+            rows.append(f"row {i+1} : {row_as_list}")
+
+        mapping_result = await self._get_column_mapping(rows, output_schema)
         
         processed_sheet = self._create_output_dataframe(sheet_df=sheet_df, mapping_result=mapping_result, output_schema=output_schema)
         df[sheet_name] = processed_sheet
