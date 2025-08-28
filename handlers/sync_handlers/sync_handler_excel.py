@@ -135,6 +135,8 @@ class SyncHandlerExcel:
             rows.append(f"row {i+1} : {row_as_list}")
 
         mapping_result = await self._get_column_mapping(rows, output_schema)
+        if mapping_result.get("error") is True:
+            raise Exception(mapping_result.get("error_message"))
         
         processed_sheet = self._create_output_dataframe(sheet_df=sheet_df, mapping_result=mapping_result, output_schema=output_schema)
         df[sheet_name] = processed_sheet

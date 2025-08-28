@@ -103,7 +103,8 @@ class SyncHandlerCSV:
         
         # Get intelligent column mapping using Groq LLM
         mapping_result = await self._get_column_mapping(list(df.columns), output_schema)
-        
+        if mapping_result.get("error") is True:
+            raise Exception(mapping_result.get("error_message"))
         processed_file = self._create_output_dataframe(df=df, mapping_result=mapping_result, output_schema=output_schema)
         file_detail = {
             "filename": filename,

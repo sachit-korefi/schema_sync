@@ -10,38 +10,41 @@ class SyncHandler:
         self.sync_handler_csv = SyncHandlerCSV()
         self.sync_handler_excel = SyncHandlerExcel()
 
-    @log_errors
     async def handle(self, sync_metadata, files):
-        processed_files = []
-        output_schemas_dict = self.get_output_schemas(sync_metadata=sync_metadata)
+        try:
+            processed_files = []
+            output_schemas_dict = self.get_output_schemas(sync_metadata=sync_metadata)
 
-        for file in files:
-            filename = file.filename
-            logger.info(f"processing file : {filename}")
+            for file in files:
+                filename = file.filename
+                logger.info(f"processing file : {filename}")
 
-            file_metadata = sync_metadata["file_metadatas"].get(filename, None)
-            logger.info(f"file_metadata : {file_metadata}")
-            if file_metadata is None:
-                logger.error(f"schema not found for file {filename}")
-                continue
+                file_metadata = sync_metadata["file_metadatas"].get(filename, None)
+                logger.info(f"file_metadata : {file_metadata}")
+                if file_metadata is None:
+                    logger.error(f"schema not found for file {filename}")
+                    continue
 
-            output_schema = output_schemas_dict.get(file_metadata.get("schema_uuid"), None)
-            logger.info(f"file_schema : {output_schema}")
-            if output_schema is None:
-                logger.error(f"schema not found for file {filename}")
-                continue
+                output_schema = output_schemas_dict.get(file_metadata.get("schema_uuid"), None)
+                logger.info(f"file_schema : {output_schema}")
+                if output_schema is None:
+                    logger.error(f"schema not found for file {filename}")
+                    continue
 
-            file_extension = filename.split('.')[-1]
-            processed_file = None
-            if file_extension == 'csv' and output_schema is not None:
-                processed_file = await self.sync_handler_csv.handle(output_schema, file)
-            elif file_extension in ['xlsx', 'xls'] and output_schema is not None:
-                sheet_name = file_metadata.get("sheet", None)
-                if sheet_name is not None:
-                    processed_file = await self.sync_handler_excel.handle(output_schema, file, sheet_name)
-            if processed_file is not None:
-                processed_files.append(processed_file)
-        return processed_files
+                file_extension = filename.split('.')[-1]
+                processed_file = None
+                if file_extension == 'csv' and output_schema is not None:
+                    processed_file = await self.sync_handler_csv.handle(output_schema, file)
+                elif file_extension in ['xlsx', 'xls'] and output_schema is not None:
+                    sheet_name = file_metadata.get("sheet", None)
+                    if sheet_name is not None:
+                        processed_file = await self.sync_handler_excel.handle(output_schema, file, sheet_name)
+                if processed_file is not None:
+                    processed_files.append(processed_file)
+            return processed_files
+        except Exception as e:
+            logger.error(f"Error in syncing Schema: {e}")
+            raise e
 
     @log_errors
     def get_output_schemas(self, sync_metadata):
