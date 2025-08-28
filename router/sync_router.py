@@ -102,7 +102,7 @@ async def sync_schema(
         logger.error(f"Failed to generate files: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error occurred while generating files"
+            detail=f"Internal server error occurred while generating files : {e}"
         )
 
 
